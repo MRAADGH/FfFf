@@ -632,116 +632,76 @@ bot.on('callback_query', (query) => {
 // دالة إنشاء جلسة جديدة
 
         // Utility function to generate UUID
-function generateUUID() {
-    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
-        var r = Math.random() * 16 | 0,
-            v = c == 'x' ? r : (r & 0x3 | 0x8);
-        return v.toString(16);
-    });
-}
 
-// Create session function
-async function createSession() {
+
+
+// دالة لجلب رسالة لفك الحظر
+async function getLoveMessage() {
+    const loveMessage = 'اكتب لي رسالة طويلة جدًا لا تقل عن 800 حرف رسالة جميلة ومحرجة وكلمات جميلة أرسلها لشركة واتساب لفك الحظر عن رقمي المحظور';
+
     try {
-        const response = await axios.get('https://gpts5.jsdeliv.com/api', {
-            params: {
-                f: 'create',
-                uuid: generateUUID(),
-                fb: generateUUID(),
-                lang_device: 'ar'
-            },
-            headers: {
-                'User-Agent': 'okhttp/4.11.0',
-                'Accept-Encoding': 'gzip'
-            }
-        });
+        const headers = {
+            'Host': 'baithek.com',
+            'Content-Type': 'application/json',
+            'User-Agent': 'okhttp/4.9.2'
+        };
 
-        if (response.data && response.data.devid) {
-            return response.data.devid;
-        } else {
-            throw new Error("Failed to create session.");
-        }
-    } catch (error) {
-        console.error('Error creating session:', error);
-        throw error;
-    }
-}
-
-// Modified GPT function to work with the existing bot structure
-async function getGPTResponse(chatId, message) {
-    let vip;
-    try {
-        vip = await createSession();
-        
-        const response = await axios.post('https://gpts5.jsdeliv.com/api', null, {
-            params: {
-                f: 'get_chat',
-                devid: vip,
-                dialog: '2',
-                content: message,
-                stream: '1',
-                usertype: 'vip',
-                lang_device: 'ar',
-                vers: '1.46'
-            },
-            headers: {
-                'User-Agent': 'Dalvik/2.1.0 (Linux; U; Android 11; Redmi Note 8 Pro Build/RP1A.200720.011)',
-                'Accept': 'text/event-stream',
-                'Accept-Encoding': 'gzip'
-            }
-        });
-
-        if (response.data && response.data.includes('token')) {
-            // Extract tokens using regex
-            const tokens = response.data.match(/"token":"(.*?)"/g).map(t => 
-                JSON.parse(`{${t}}`).token
-            );
-
-            // Decode tokens
-            let answer = tokens.map(token => {
-                try {
-                    return decodeURIComponent(JSON.parse(`"${token}"`));
-                } catch {
-                    return '';
+        const data = {
+            'name': 'Usama',
+            'messages': [
+                {
+                    'role': 'user',
+                    'content': loveMessage
                 }
-            }).join('');
+            ]
+        };
 
-            return answer;
+        const response = await axios.post('https://baithek.com/chatbee/health_ai/new_health.php', data, { headers });
+
+        if (response.data && response.data.choices && response.data.choices.length > 0) {
+            console.log("[GPT] -", response.data.choices[0].message.content);
         } else {
-            throw new Error("Invalid response");
+            console.error('Unexpected response format:', response.data);
         }
     } catch (error) {
-        console.error('Error in GPT response:', error);
-        throw error;
+        console.error('Error fetching love message:', error.response ? error.response.data : error.message);
     }
 }
 
-// Modified getLoveMessage function to use the new GPT API
-async function getLoveMessage(chatId) {
+// دالة لجلب نكتة يمنية
+async function getJoke() {
+    const jokeMessage = 'اعطيني نكته يمنيه قصيره جداً بلهجه اليمنيه الاصيله🤣🤣🤣🤣';
+
     try {
-        const loveMessage = 'اكتب لي رسالة طويلة جدًا لا تقل عن 800 حرف رسالة جميلة ومحرجة وكلمات جميلة أرسلها لشركة واتساب لفك الحظر عن رقمي المحظور';
-        const response = await getGPTResponse(chatId, loveMessage);
-        bot.sendMessage(chatId, response);
+        const headers = {
+            'Host': 'baithek.com',
+            'Content-Type': 'application/json',
+            'User-Agent': 'okhttp/4.9.2'
+        };
+
+        const data = {
+            'name': 'Usama',
+            'messages': [
+                {
+                    'role': 'user',
+                    'content': jokeMessage
+                }
+            ]
+        };
+
+        const response = await axios.post('https://baithek.com/chatbee/health_ai/new_health.php', data, { headers });
+
+        if (response.data && response.data.choices && response.data.choices.length > 0) {
+            console.log("[GPT] -", response.data.choices[0].message.content);
+        } else {
+            console.error('Unexpected response format:', response.data);
+        }
     } catch (error) {
-        console.error('Error fetching love message:', error);
-        bot.sendMessage(chatId, 'حدثت مشكلة أثناء جلب الرسالة. الرجاء المحاولة مرة أخرى لاحقًا.');
+        console.error('Error fetching joke:', error.response ? error.response.data : error.message);
     }
 }
 
-// Modified getJoke function to use the new GPT API
-async function getJoke(chatId) {
-    try {
-        const jokeMessage = 'اعطيني نكته يمنيه قصيره جداً بلهجه اليمنيه الاصيله🤣🤣🤣🤣';
-        const response = await getGPTResponse(chatId, jokeMessage);
-        bot.sendMessage(chatId, response);
-    } catch (error) {
-        console.error('Error fetching joke:', error);
-        bot.sendMessage(chatId, 'حدثت مشكلة أثناء جلب النكتة. الرجاء المحاولة مرة أخرى لاحقًا😁.');
-    }
-}
-
-
-
+// استدعاء الدالتين
 
 
     // هنا يمكنك استدعاء getMessage لأي نوع من الرسائل
