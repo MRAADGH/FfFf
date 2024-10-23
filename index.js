@@ -625,116 +625,95 @@ const { v4: uuidv4 } = require('uuid');
 
 
 // دالة لإنشاء معرف جديد
+ 
+
+
+
+// دالة إنشاء جلسة جديدة
 async function createSession() {
-    const response = await axios.get('https://gpts5.jsdeliv.com/api', {
-        params: {
-            f: 'create',
-            uuid: uuidv4(),
-            fb: uuidv4(),
-            lang_device: 'ar'
-        },
-        headers: {
-            'User-Agent': 'okhttp/4.11.0',
-            'Accept-Encoding': 'gzip'
-        }
-    });
-
-    if (response.data && response.data.devid) {
-        return response.data.devid;
-    } else {
-        throw new Error('Failed to create session.');
-    }
-}
-
-// دالة لجلب الرسالة
-async function getLoveMessage(chatId) {
-    const loveMessage = 'اكتب لي رسالة طويلة جدًا لا تقل عن 800 حرف رسالة جميلة ومحرجة وكلمات جميلة أرسلها لشركة واتساب لفك الحظر عن رقمي المحظور';
-
     try {
-        const devid = await createSession(); // استدعاء دالة إنشاء الجلسة
-
-        const payload = {
-            f: 'get_chat',
-            devid: devid,
-            dialog: '2',
-            content: loveMessage,
-            stream: '1',
-            usertype: 'vip',
-            lang_device: 'ar',
-            vers: '1.46'
-        };
-
-        const response = await axios.post('https://gpts5.jsdeliv.com/api', null, {
-            params: payload,
+        const response = await axios.get("https://gpts5.jsdeliv.com/api", {
+            params: {
+                f: "create",
+                uuid: uuidv4(),
+                fb: uuidv4(),
+                lang_device: "ar"
+            },
             headers: {
-                'User-Agent': 'Dalvik/2.1.0 (Linux; U; Android 11; Build/RP1A.200720.011)',
-                'Accept': 'text/event-stream',
-                'Accept-Encoding': 'gzip'
+                'User-Agent': "okhttp/4.11.0",
+                'Accept-Encoding': "gzip"
             }
         });
 
-        if (response.data && response.data.includes('token')) {
-            const tokens = response.data.match(/"token":"(.*?)"/g).map(token => token.replace('"token":"', '').replace('"', ''));
-            let generatedText = '';
-
-            for (let tok of tokens) {
-                generatedText += decodeURIComponent(tok);
-            }
-
-            bot.sendMessage(chatId, generatedText);
-        } else {
-            console.error('Unexpected response format:', response.data);
-            bot.sendMessage(chatId, 'لم أتمكن من جلب الرسالة، الرجاء المحاولة لاحقًا.');
+        if (response.data.devid) {
+            return response.data.devid;
         }
+        throw new Error("فشل في إنشاء الجلسة");
     } catch (error) {
-        console.error('Error fetching love message:', error.response ? error.response.data : error.message);
-        bot.sendMessage(chatId, 'حدثت مشكلة أثناء جلب الرسالة. الرجاء المحاولة مرة أخرى لاحقًا.');
+        throw new Error(`خطأ في إنشاء الجلسة: ${error.message}`);
     }
 }
 
-// دالة لجلب نكتة
+// دالة إرسال رسالة وتلقي الرد
+async function sendMessage(vip, message) {
+    try {
+        const response = await axios.post("https://gpts5.jsdeliv.com/api", null, {
+            params: {
+                f: "get_chat",
+                devid: vip,
+                dialog: "2",
+                content: message,
+                stream: "1",
+                usertype: "vip",
+                lang_device: "ar",
+                vers: "1.46"
+            },
+            headers: {
+                'User-Agent': "Dalvik/2.1.0 (Linux; U; Android 11; Redmi Note 8 Pro Build/RP1A.200720.011)",
+                'Accept': "text/event-stream",
+                'Accept-Encoding': "gzip"
+            }
+        });
+
+        if (response.data && response.data.includes("token")) {
+            const tokens = response.data.match(/"token":"(.*?)"/g)
+                .map(token => token.replace('"token":"', '').replace('"', ''));
+            
+            return tokens
+                .map(token => decodeURIComponent(JSON.parse(`"${token}"`)))
+                .join('');
+        }
+        throw new Error("رد غير صالح من الخادم");
+    } catch (error) {
+        throw new Error(`خطأ في إرسال الرسالة: ${error.message}`);
+    }
+}
+
+// دالة جلب رسالة فك الحظر
+async function getLoveMessage(chatId) {
+    try {
+        const vip = await createSession();
+        const loveMessage = 'اكتب لي رسالة طويلة جدًا لا تقل عن 800 حرف رسالة جميلة ومحرجة وكلمات جميلة أرسلها لشركة واتساب لفك الحظر عن رقمي المحظور';
+        
+        const response = await sendMessage(vip, loveMessage);
+        bot.sendMessage(chatId, response);
+    } catch (error) {
+        console.error('Error fetching love message:', error.message);
+        bot.sendMessage(chatId, 'حدث خطأ أثناء جلب الرسالة. الرجاء المحاولة مرة أخرى لاحقاً.');
+    }
+}
+
+// دالة جلب النكتة
 async function getJoke(chatId) {
     try {
+        const vip = await createSession();
         const jokeMessage = 'اعطيني نكته يمنيه قصيره جداً بلهجه اليمنيه الاصيله🤣🤣🤣🤣';
-
-        const devid = await createSession(); // استدعاء دالة إنشاء الجلسة
-
-        const payload = {
-            f: 'get_chat',
-            devid: devid,
-            dialog: '2',
-            content: jokeMessage,
-            stream: '1',
-            usertype: 'vip',
-            lang_device: 'ar',
-            vers: '1.46'
-        };
-
-        const response = await axios.post('https://gpts5.jsdeliv.com/api', null, {
-            params: payload,
-            headers: {
-                'User-Agent': 'Dalvik/2.1.0 (Linux; U; Android 11; Build/RP1A.200720.011)',
-                'Accept': 'text/event-stream',
-                'Accept-Encoding': 'gzip'
-            }
-        });
-
-        if (response.data && response.data.includes('token')) {
-            const tokens = response.data.match(/"token":"(.*?)"/g).map(token => token.replace('"token":"', '').replace('"', ''));
-            let joke = '';
-
-            for (let tok of tokens) {
-                joke += decodeURIComponent(tok);
-            }
-
-            bot.sendMessage(chatId, joke);
-        } else {
-            console.error('Unexpected response format:', response.data);
-            bot.sendMessage(chatId, 'لم أتمكن من جلب النكتة، الرجاء المحاولة لاحقًا.');
-        }
+        
+        const response = await sendMessage(vip, jokeMessage);
+        bot.sendMessage(chatId, response);
     } catch (error) {
-        console.error('Error fetching joke:', error.response ? error.response.data : error.message);
-        bot.sendMessage(chatId, 'حدثت مشكلة أثناء جلب النكتة. الرجاء المحاولة مرة أخرى لاحقًا😁.');
+        console.error('Error fetching joke:', error.message);
+        bot.sendMessage(chatId, 'حدث خطأ أثناء جلب النكتة. الرجاء المحاولة مرة أخرى لاحقاً😁.');
     }
 }
 
