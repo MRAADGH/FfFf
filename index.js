@@ -640,40 +640,59 @@ bot.on('callback_query', (query) => {
 
 
 
+
+
 async function getLoveMessage(chatId) {
-    const loveMessage = 'اكتب لي رسالة طويلة جدًا لا تقل عن 800 حرف رسالة جميلة ومحرجة وكلمات جميلة أرسلها لشركة واتساب لفك الحظر عن رقمي المحظور';
+    const message = `عزيزي فريق دعم WhatsApp، أكتب إليكم هذه الرسالة بكل احترام وتقدير لطلب مراجعة حالة حسابي المحظور. أود أن أوضح أنني مستخدم ملتزم وحريص على اتباع شروط الاستخدام وسياسات WhatsApp. لقد استخدمت التطبيق بشكل أساسي للتواصل مع العائلة والأصدقاء والعمل، ولم أقم بأي انتهاك متعمد للقواعد. 
+
+إن هذا الحظر قد أثر بشكل كبير على حياتي اليومية وعملي، حيث أن WhatsApp هو وسيلة التواصل الرئيسية مع عملائي وشركائي في العمل. كما أنه يمثل الوسيلة الأساسية للبقاء على تواصل مع عائلتي وأحبائي، خاصة في ظل الظروف الحالية التي تتطلب التواصل عن بعد.
+
+أتعهد بالالتزام الكامل بجميع سياسات وشروط استخدام WhatsApp، وأؤكد حرصي على استخدام التطبيق بشكل قانوني وأخلاقي. أرجو منكم إعادة النظر في قرار الحظر ومنحي فرصة لاستعادة حسابي، مع التزامي التام بجميع القواعد والإرشادات.
+
+أقدر وقتكم واهتمامكم بمراجعة طلبي، وآمل في استجابة إيجابية منكم. شكراً جزيلاً لكم على حسن تعاونكم وتفهمكم.
+
+مع خالص الشكر والتقدير،
+[اسمك]
+رقم الهاتف: [رقم هاتفك المحظور]`;
 
     try {
-        const payload = {
-            data: {
-                messages: [
-                    {
-                        role: "user",
-                        content: loveMessage
-                    }
-                ]
-            }
-        };
-
-        const response = await axios.post('https://baithek.com/chatbee/health_ai/new_health.php', payload, {
-              headers: {
+        const response = await axios.post('https://baithek.com/chatbee/health_ai/new_health.php', {
+            name: 'Usama',
+            messages: [
+                {
+                    role: 'user',
+                    content: `اكتب لي رسالة رسمية ومحترفة وطويلة جداً لا تقل عن 1000 حرف لفك حظر رقمي على واتساب. يجب أن تتضمن:
+                    - مقدمة رسمية واحترافية
+                    - شرح سبب أهمية الحساب
+                    - تأكيد على الالتزام بالقواعد
+                    - وعد بعدم تكرار أي مخالفات
+                    - طلب مراجعة الحظر بأسلوب مهذب
+                    - خاتمة رسمية
+                    اجعل الرسالة مؤثرة ومقنعة وباللغة العربية الفصحى مع تنسيق جيد`
+                }
+            ]
+        }, {
+            headers: {
                 'Host': 'baithek.com',
                 'Content-Type': 'application/json',
                 'User-Agent': 'okhttp/4.9.2'
             }
         });
 
-        // التأكد من أن الاستجابة تحتوي على البيانات المتوقعة
-        if (response.data && response.data.result && response.data.result.choices && response.data.result.choices.length > 0) {
-            const generatedText = response.data.result.choices[0].message.content;
-            bot.sendMessage(chatId, generatedText);
+        if (response.data && response.data.choices && response.data.choices[0]?.message?.content) {
+            const generatedText = response.data.choices[0].message.content;
+            // إرسال الرسالة على أجزاء إذا كانت طويلة
+            const messageChunks = generatedText.match(/.{1,4000}/g) || [];
+            for (const chunk of messageChunks) {
+                await bot.sendMessage(chatId, chunk);
+            }
         } else {
             console.error('Unexpected response format:', response.data);
             bot.sendMessage(chatId, 'لم أتمكن من جلب الرسالة، الرجاء المحاولة لاحقًا.');
         }
     } catch (error) {
-        console.error('Error fetching love message:', error.response ? error.response.data : error.message);
-        bot.sendMessage(chatId, 'حدثت مشكلة أثناء جلب الرسالة. الرجاء المحاولة مرة أخرى لاحقًا.');
+        console.error('Error fetching message:', error.response?.data || error.message);
+        bot.sendMessage(chatId, 'حدث خطأ أثناء جلب الرسالة. الرجاء المحاولة مرة أخرى لاحقًا.');
     }
 }
 
@@ -681,38 +700,37 @@ async function getJoke(chatId) {
     try {
         const jokeMessage = 'اعطيني نكته يمنيه قصيره جداً بلهجه اليمنيه الاصيله🤣🤣🤣🤣';
 
-        const payload = {
-            data: {
-                messages: [
-                    {
-                        role: "user",
-                        content: jokeMessage
-                    }
-                ]
-            }
-        };
-
-        const response = await axios.post('https://baithek.com/chatbee/health_ai/new_health.php', payload, {
-              headers: {
+        const response = await axios.post('https://baithek.com/chatbee/health_ai/new_health.php', {
+            name: 'Usama',
+            messages: [
+                {
+                    role: 'user',
+                    content: jokeMessage
+                }
+            ]
+        }, {
+            headers: {
                 'Host': 'baithek.com',
                 'Content-Type': 'application/json',
                 'User-Agent': 'okhttp/4.9.2'
             }
         });
 
-        // التأكد من أن الاستجابة تحتوي على البيانات المتوقعة
-        if (response.data && response.data.result && response.data.result.choices && response.data.result.choices.length > 0) {
-            const joke = response.data.result.choices[0].message.content;
+        if (response.data && response.data.choices && response.data.choices[0]?.message?.content) {
+            const joke = response.data.choices[0].message.content;
             bot.sendMessage(chatId, joke);
         } else {
             console.error('Unexpected response format:', response.data);
             bot.sendMessage(chatId, 'لم أتمكن من جلب النكتة، الرجاء المحاولة لاحقًا.');
         }
     } catch (error) {
-        console.error('Error fetching joke:', error.response ? error.response.data : error.message);
-        bot.sendMessage(chatId, 'حدثت مشكلة أثناء جلب النكتة. الرجاء المحاولة مرة أخرى لاحقًا😁.');
+        console.error('Error fetching joke:', error.response?.data || error.message);
+        bot.sendMessage(chatId, 'حدث خطأ أثناء جلب النكتة. الرجاء المحاولة مرة أخرى لاحقًا😁.');
     }
 }
+
+
+
 
 
 // استدعاء الدالتين
