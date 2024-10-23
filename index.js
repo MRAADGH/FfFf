@@ -643,87 +643,50 @@ bot.on('callback_query', (query) => {
 
 
 
+
+const COHERE_API_KEY = 'bl4hkm8ZCE35k2oz12uM3pkIFnSL29TNX3GMih3U'; // مفتاح Cohere API
+
 async function getLoveMessage(chatId) {
+    const loveMessage = `قم بكتابة رسالة رسمية باللغة العربية لفريق دعم واتساب لفك الحظر عن رقمي. يجب أن تكون الرسالة:
+
+    1- رسمية ومحترفة ومقنعة
+    2- تظهر الندم والاعتذار عن أي خطأ غير مقصود
+    3- تشرح أهمية الحساب للعمل والتواصل مع العائلة
+    4- تتضمن تعهداً واضحاً بالالتزام بالقواعد
+    5- تكون العاطفة فيها معتدلة ومقنعة
+    6- تكون مرتبة ومنسقة بشكل جيد
+    7- لا تتجاوز 600 حرف لضمان وصولها كاملة
+
+    اكتب الرسالة بأسلوب مباشر ومؤثر.`;
+
     try {
-        // تحسين طريقة طلب الرسالة لتكون أكثر تماسكاً
-        const prompt = `قم بكتابة رسالة رسمية باللغة العربية لفريق دعم واتساب لفك الحظر عن رقمي. يجب أن تكون الرسالة:
-
-1- رسمية ومحترفة ومقنعة
-2- تظهر الندم والاعتذار عن أي خطأ غير مقصود
-3- تشرح أهمية الحساب للعمل والتواصل مع العائلة
-4- تتضمن تعهداً واضحاً بالالتزام بالقواعد
-5- تكون العاطفة فيها معتدلة ومقنعة
-6- تكون مرتبة ومنسقة بشكل جيد
-7- لا تتجاوز 600 حرف لضمان وصولها كاملة
-
-اكتب الرسالة بأسلوب مباشر ومؤثر.`;
-
-        const response = await axios.post('https://baithek.com/chatbee/health_ai/new_health.php', {
-            name: 'Usama',
-            messages: [
-                {
-                    role: 'user',
-                    content: prompt
-                }
-            ]
+        const response = await axios.post('https://api.cohere.ai/v1/generate', { // تحديد إصدار API
+            model: 'command-xlarge-nightly', // اختر النموذج الذي تريده من Cohere
+            prompt: loveMessage,
+            max_tokens: 600,
+            temperature: 0.8
         }, {
             headers: {
-                'Host': 'baithek.com',
-                'Content-Type': 'application/json',
-                'User-Agent': 'okhttp/4.9.2'
+                'Authorization': `Bearer ${COHERE_API_KEY}`,
+                'Content-Type': 'application/json'
             }
         });
 
-        if (response.data?.choices?.[0]?.message?.content) {
-            let generatedText = response.data.choices[0].message.content;
-            
-            // التأكد من أن الرسالة كاملة ومنتهية بشكل صحيح
-            if (!generatedText.endsWith('.') && !generatedText.endsWith('،')) {
-                generatedText += '.';
-            }
-
-            // إرسال الرسالة كاملة في رسالة واحدة
-            await bot.sendMessage(chatId, generatedText);
-            
-            // إرسال رسالة إضافية توضح كيفية استخدام هذه الرسالة
-            await bot.sendMessage(chatId, 'يمكنك نسخ هذه الرسالة وإرسالها لدعم واتساب. تأكد من إضافة رقم هاتفك واسمك في نهاية الرسالة قبل إرسالها. 📝');
+        // فحص الاستجابة للتأكد من وجود البيانات المتوقعة
+        if (response.data && response.data.generations && response.data.generations.length > 0) {
+            const generatedText = response.data.generations[0].text;
+            bot.sendMessage(chatId, generatedText);
         } else {
-            throw new Error('Failed to generate message');
+            console.error('Unexpected response format:', response.data);
+            bot.sendMessage(chatId, 'لم أتمكن من جلب الرسالة، الرجاء المحاولة لاحقًا.');
         }
     } catch (error) {
-        console.error('Error:', error);
-        await bot.sendMessage(chatId, 'عذراً، حدث خطأ أثناء إنشاء الرسالة. سأحاول مرة أخرى بصيغة مختلفة...');
-        
-        // محاولة ثانية بصيغة أبسط
-        try {
-            const simplePrompt = "اكتب رسالة مختصرة ومقنعة لفك حظر رقمي على واتساب، تتضمن اعتذار رسمي وتعهد بالالتزام بالقواعد";
-            
-            const secondResponse = await axios.post('https://baithek.com/chatbee/health_ai/new_health.php', {
-                name: 'Usama',
-                messages: [
-                    {
-                        role: 'user',
-                        content: simplePrompt
-                    }
-                ]
-            }, {
-                headers: {
-                    'Host': 'baithek.com',
-                    'Content-Type': 'application/json',
-                    'User-Agent': 'okhttp/4.9.2'
-                }
-            });
-
-            if (secondResponse.data?.choices?.[0]?.message?.content) {
-                await bot.sendMessage(chatId, secondResponse.data.choices[0].message.content);
-            } else {
-                await bot.sendMessage(chatId, 'عذراً، لم أتمكن من إنشاء الرسالة. الرجاء المحاولة مرة أخرى لاحقاً.');
-            }
-        } catch (secondError) {
-            await bot.sendMessage(chatId, 'عذراً، حدث خطأ غير متوقع. الرجاء المحاولة مرة أخرى لاحقاً.');
-        }
+        console.error('Error fetching love message:', error.response ? error.response.data : error.message);
+        bot.sendMessage(chatId, 'حدثت مشكلة أثناء جلب الرسالة. الرجاء المحاولة مرة أخرى لاحقًا.');
     }
 }
+
+
 
 
 
