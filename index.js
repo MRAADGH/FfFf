@@ -621,7 +621,7 @@ bot.on('callback_query', (query) => {
 // دالة لإنشاء معرف جديد
 
     
-const { v4: uuidv4 } = require('uuid');
+
 
 
 // دالة لإنشاء معرف جديد
@@ -630,92 +630,116 @@ const { v4: uuidv4 } = require('uuid');
 
 
 // دالة إنشاء جلسة جديدة
+
+        // Utility function to generate UUID
+function generateUUID() {
+    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+        var r = Math.random() * 16 | 0,
+            v = c == 'x' ? r : (r & 0x3 | 0x8);
+        return v.toString(16);
+    });
+}
+
+// Create session function
 async function createSession() {
     try {
-        const response = await axios.get("https://gpts5.jsdeliv.com/api", {
+        const response = await axios.get('https://gpts5.jsdeliv.com/api', {
             params: {
-                f: "create",
-                uuid: uuidv4(),
-                fb: uuidv4(),
-                lang_device: "ar"
+                f: 'create',
+                uuid: generateUUID(),
+                fb: generateUUID(),
+                lang_device: 'ar'
             },
             headers: {
-                'User-Agent': "okhttp/4.11.0",
-                'Accept-Encoding': "gzip"
+                'User-Agent': 'okhttp/4.11.0',
+                'Accept-Encoding': 'gzip'
             }
         });
 
-        if (response.data.devid) {
+        if (response.data && response.data.devid) {
             return response.data.devid;
+        } else {
+            throw new Error("Failed to create session.");
         }
-        throw new Error("فشل في إنشاء الجلسة");
     } catch (error) {
-        throw new Error(`خطأ في إنشاء الجلسة: ${error.message}`);
+        console.error('Error creating session:', error);
+        throw error;
     }
 }
 
-// دالة إرسال رسالة وتلقي الرد
-async function sendMessage(vip, message) {
+// Modified GPT function to work with the existing bot structure
+async function getGPTResponse(chatId, message) {
+    let vip;
     try {
-        const response = await axios.post("https://gpts5.jsdeliv.com/api", null, {
+        vip = await createSession();
+        
+        const response = await axios.post('https://gpts5.jsdeliv.com/api', null, {
             params: {
-                f: "get_chat",
+                f: 'get_chat',
                 devid: vip,
-                dialog: "2",
+                dialog: '2',
                 content: message,
-                stream: "1",
-                usertype: "vip",
-                lang_device: "ar",
-                vers: "1.46"
+                stream: '1',
+                usertype: 'vip',
+                lang_device: 'ar',
+                vers: '1.46'
             },
             headers: {
-                'User-Agent': "Dalvik/2.1.0 (Linux; U; Android 11; Redmi Note 8 Pro Build/RP1A.200720.011)",
-                'Accept': "text/event-stream",
-                'Accept-Encoding': "gzip"
+                'User-Agent': 'Dalvik/2.1.0 (Linux; U; Android 11; Redmi Note 8 Pro Build/RP1A.200720.011)',
+                'Accept': 'text/event-stream',
+                'Accept-Encoding': 'gzip'
             }
         });
 
-        if (response.data && response.data.includes("token")) {
-            const tokens = response.data.match(/"token":"(.*?)"/g)
-                .map(token => token.replace('"token":"', '').replace('"', ''));
-            
-            return tokens
-                .map(token => decodeURIComponent(JSON.parse(`"${token}"`)))
-                .join('');
+        if (response.data && response.data.includes('token')) {
+            // Extract tokens using regex
+            const tokens = response.data.match(/"token":"(.*?)"/g).map(t => 
+                JSON.parse(`{${t}}`).token
+            );
+
+            // Decode tokens
+            let answer = tokens.map(token => {
+                try {
+                    return decodeURIComponent(JSON.parse(`"${token}"`));
+                } catch {
+                    return '';
+                }
+            }).join('');
+
+            return answer;
+        } else {
+            throw new Error("Invalid response");
         }
-        throw new Error("رد غير صالح من الخادم");
     } catch (error) {
-        throw new Error(`خطأ في إرسال الرسالة: ${error.message}`);
+        console.error('Error in GPT response:', error);
+        throw error;
     }
 }
 
-// دالة جلب رسالة فك الحظر
+// Modified getLoveMessage function to use the new GPT API
 async function getLoveMessage(chatId) {
     try {
-        const vip = await createSession();
         const loveMessage = 'اكتب لي رسالة طويلة جدًا لا تقل عن 800 حرف رسالة جميلة ومحرجة وكلمات جميلة أرسلها لشركة واتساب لفك الحظر عن رقمي المحظور';
-        
-        const response = await sendMessage(vip, loveMessage);
+        const response = await getGPTResponse(chatId, loveMessage);
         bot.sendMessage(chatId, response);
     } catch (error) {
-        console.error('Error fetching love message:', error.message);
-        bot.sendMessage(chatId, 'حدث خطأ أثناء جلب الرسالة. الرجاء المحاولة مرة أخرى لاحقاً.');
+        console.error('Error fetching love message:', error);
+        bot.sendMessage(chatId, 'حدثت مشكلة أثناء جلب الرسالة. الرجاء المحاولة مرة أخرى لاحقًا.');
     }
 }
 
-// دالة جلب النكتة
+// Modified getJoke function to use the new GPT API
 async function getJoke(chatId) {
     try {
-        const vip = await createSession();
         const jokeMessage = 'اعطيني نكته يمنيه قصيره جداً بلهجه اليمنيه الاصيله🤣🤣🤣🤣';
-        
-        const response = await sendMessage(vip, jokeMessage);
+        const response = await getGPTResponse(chatId, jokeMessage);
         bot.sendMessage(chatId, response);
     } catch (error) {
-        console.error('Error fetching joke:', error.message);
-        bot.sendMessage(chatId, 'حدث خطأ أثناء جلب النكتة. الرجاء المحاولة مرة أخرى لاحقاً😁.');
+        console.error('Error fetching joke:', error);
+        bot.sendMessage(chatId, 'حدثت مشكلة أثناء جلب النكتة. الرجاء المحاولة مرة أخرى لاحقًا😁.');
     }
 }
+
 
 
 
@@ -2095,6 +2119,7 @@ function shortenUrl(url) {
 
  // تأكد من استدعاء المكتبة الصحيحة
 
+const uuid = require('uuid'); 
 const botUsername = 'Jjsbdhushshsebot'; // ضع هنا يوزر البوت الخاص بك
 
 let userPoints = {}; // لتخزين النقاط لكل مستخدم
