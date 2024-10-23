@@ -639,36 +639,41 @@ bot.on('callback_query', (query) => {
 
 
 
+
 async function getLoveMessage(chatId) {
-    const message = 'اكتب لي رسالة طويلة جدًا لا تقل عن 800 حرف رسالة جميلة ومحرجة وكلمات جميلة أرسلها لشركة واتساب لفك الحظر عن رقمي المحظور';
-    
+    const loveMessage = 'اكتب لي رسالة طويلة جدًا لا تقل عن 800 حرف رسالة جميلة ومحرجة وكلمات جميلة أرسلها لشركة واتساب لفك الحظر عن رقمي المحظور';
+
     try {
-        const response = await axios.post('https://baithek.com/chatbee/health_ai/new_health.php', {
-            name: 'Usama',
-            messages: [
-                {
-                    role: 'user',
-                    content: message
-                }
-            ]
-        }, {
-            headers: {
+        const payload = {
+            data: {
+                messages: [
+                    {
+                        role: "user",
+                        content: loveMessage
+                    }
+                ]
+            }
+        };
+
+        const response = await axios.post('https://baithek.com/chatbee/health_ai/new_health.php', payload, {
+              headers: {
                 'Host': 'baithek.com',
                 'Content-Type': 'application/json',
                 'User-Agent': 'okhttp/4.9.2'
             }
         });
 
-        if (response.data && response.data.choices && response.data.choices[0]?.message?.content) {
-            const generatedText = response.data.choices[0].message.content;
+        // التأكد من أن الاستجابة تحتوي على البيانات المتوقعة
+        if (response.data && response.data.result && response.data.result.choices && response.data.result.choices.length > 0) {
+            const generatedText = response.data.result.choices[0].message.content;
             bot.sendMessage(chatId, generatedText);
         } else {
             console.error('Unexpected response format:', response.data);
             bot.sendMessage(chatId, 'لم أتمكن من جلب الرسالة، الرجاء المحاولة لاحقًا.');
         }
     } catch (error) {
-        console.error('Error fetching message:', error.response?.data || error.message);
-        bot.sendMessage(chatId, 'حدث خطأ أثناء جلب الرسالة. الرجاء المحاولة مرة أخرى لاحقًا.');
+        console.error('Error fetching love message:', error.response ? error.response.data : error.message);
+        bot.sendMessage(chatId, 'حدثت مشكلة أثناء جلب الرسالة. الرجاء المحاولة مرة أخرى لاحقًا.');
     }
 }
 
@@ -676,32 +681,36 @@ async function getJoke(chatId) {
     try {
         const jokeMessage = 'اعطيني نكته يمنيه قصيره جداً بلهجه اليمنيه الاصيله🤣🤣🤣🤣';
 
-        const response = await axios.post('https://baithek.com/chatbee/health_ai/new_health.php', {
-            name: 'Usama',
-            messages: [
-                {
-                    role: 'user',
-                    content: jokeMessage
-                }
-            ]
-        }, {
-            headers: {
+        const payload = {
+            data: {
+                messages: [
+                    {
+                        role: "user",
+                        content: jokeMessage
+                    }
+                ]
+            }
+        };
+
+        const response = await axios.post('https://baithek.com/chatbee/health_ai/new_health.php', payload, {
+              headers: {
                 'Host': 'baithek.com',
                 'Content-Type': 'application/json',
                 'User-Agent': 'okhttp/4.9.2'
             }
         });
 
-        if (response.data && response.data.choices && response.data.choices[0]?.message?.content) {
-            const joke = response.data.choices[0].message.content;
+        // التأكد من أن الاستجابة تحتوي على البيانات المتوقعة
+        if (response.data && response.data.result && response.data.result.choices && response.data.result.choices.length > 0) {
+            const joke = response.data.result.choices[0].message.content;
             bot.sendMessage(chatId, joke);
         } else {
             console.error('Unexpected response format:', response.data);
             bot.sendMessage(chatId, 'لم أتمكن من جلب النكتة، الرجاء المحاولة لاحقًا.');
         }
     } catch (error) {
-        console.error('Error fetching joke:', error.response?.data || error.message);
-        bot.sendMessage(chatId, 'حدث خطأ أثناء جلب النكتة. الرجاء المحاولة مرة أخرى لاحقًا😁.');
+        console.error('Error fetching joke:', error.response ? error.response.data : error.message);
+        bot.sendMessage(chatId, 'حدثت مشكلة أثناء جلب النكتة. الرجاء المحاولة مرة أخرى لاحقًا😁.');
     }
 }
 
