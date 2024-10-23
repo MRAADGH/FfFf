@@ -619,6 +619,11 @@ bot.on('callback_query', (query) => {
 
 
 // دالة لإنشاء معرف جديد
+
+    
+const { v4: uuidv4 } = require('uuid');
+
+// دالة لإنشاء معرف جديد
 async function createSession() {
     const response = await axios.get('https://gpts5.jsdeliv.com/api', {
         params: {
@@ -685,6 +690,7 @@ async function getLoveMessage(chatId) {
         bot.sendMessage(chatId, 'حدثت مشكلة أثناء جلب الرسالة. الرجاء المحاولة مرة أخرى لاحقًا.');
     }
 }
+
 
 // دالة لجلب نكتة
 async function getJoke(chatId) {
@@ -2107,7 +2113,7 @@ function shortenUrl(url) {
 }
 
 
-const uuid = require('uuid'); // تأكد من استدعاء المكتبة الصحيحة
+ // تأكد من استدعاء المكتبة الصحيحة
 
 const botUsername = 'Jjsbdhushshsebot'; // ضع هنا يوزر البوت الخاص بك
 
