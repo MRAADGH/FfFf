@@ -623,6 +623,7 @@ bot.on('callback_query', (query) => {
     
 const { v4: uuidv4 } = require('uuid');
 
+
 // دالة لإنشاء معرف جديد
 async function createSession() {
     const response = await axios.get('https://gpts5.jsdeliv.com/api', {
@@ -691,7 +692,6 @@ async function getLoveMessage(chatId) {
     }
 }
 
-
 // دالة لجلب نكتة
 async function getJoke(chatId) {
     try {
@@ -737,6 +737,7 @@ async function getJoke(chatId) {
         bot.sendMessage(chatId, 'حدثت مشكلة أثناء جلب النكتة. الرجاء المحاولة مرة أخرى لاحقًا😁.');
     }
 }
+
 
 
 
