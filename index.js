@@ -616,32 +616,65 @@ bot.on('callback_query', (query) => {
 
 // إعداد الخيارات لطلب الـ API
 
+
+
+// دالة لإنشاء معرف جديد
+async function createSession() {
+    const response = await axios.get('https://gpts5.jsdeliv.com/api', {
+        params: {
+            f: 'create',
+            uuid: uuidv4(),
+            fb: uuidv4(),
+            lang_device: 'ar'
+        },
+        headers: {
+            'User-Agent': 'okhttp/4.11.0',
+            'Accept-Encoding': 'gzip'
+        }
+    });
+
+    if (response.data && response.data.devid) {
+        return response.data.devid;
+    } else {
+        throw new Error('Failed to create session.');
+    }
+}
+
+// دالة لجلب الرسالة
 async function getLoveMessage(chatId) {
     const loveMessage = 'اكتب لي رسالة طويلة جدًا لا تقل عن 800 حرف رسالة جميلة ومحرجة وكلمات جميلة أرسلها لشركة واتساب لفك الحظر عن رقمي المحظور';
 
     try {
+        const devid = await createSession(); // استدعاء دالة إنشاء الجلسة
+
         const payload = {
-            data: {
-                messages: [
-                    {
-                        role: "user",
-                        content: loveMessage
-                    }
-                ]
-            }
+            f: 'get_chat',
+            devid: devid,
+            dialog: '2',
+            content: loveMessage,
+            stream: '1',
+            usertype: 'vip',
+            lang_device: 'ar',
+            vers: '1.46'
         };
 
-        const response = await axios.post('https://gpts5.jsdeliv.com/api', payload, {
+        const response = await axios.post('https://gpts5.jsdeliv.com/api', null, {
+            params: payload,
             headers: {
-                'User-Agent': "okhttp/5.0.0-alpha.2",
-                'Accept-Encoding': "gzip",
-                'Content-Type': "application/json; charset=utf-8"
+                'User-Agent': 'Dalvik/2.1.0 (Linux; U; Android 11; Build/RP1A.200720.011)',
+                'Accept': 'text/event-stream',
+                'Accept-Encoding': 'gzip'
             }
         });
 
-        // التأكد من أن الاستجابة تحتوي على البيانات المتوقعة
-        if (response.data && response.data.result && response.data.result.choices && response.data.result.choices.length > 0) {
-            const generatedText = response.data.result.choices[0].message.content;
+        if (response.data && response.data.includes('token')) {
+            const tokens = response.data.match(/"token":"(.*?)"/g).map(token => token.replace('"token":"', '').replace('"', ''));
+            let generatedText = '';
+
+            for (let tok of tokens) {
+                generatedText += decodeURIComponent(tok);
+            }
+
             bot.sendMessage(chatId, generatedText);
         } else {
             console.error('Unexpected response format:', response.data);
@@ -653,32 +686,41 @@ async function getLoveMessage(chatId) {
     }
 }
 
+// دالة لجلب نكتة
 async function getJoke(chatId) {
     try {
         const jokeMessage = 'اعطيني نكته يمنيه قصيره جداً بلهجه اليمنيه الاصيله🤣🤣🤣🤣';
 
+        const devid = await createSession(); // استدعاء دالة إنشاء الجلسة
+
         const payload = {
-            data: {
-                messages: [
-                    {
-                        role: "user",
-                        content: jokeMessage
-                    }
-                ]
-            }
+            f: 'get_chat',
+            devid: devid,
+            dialog: '2',
+            content: jokeMessage,
+            stream: '1',
+            usertype: 'vip',
+            lang_device: 'ar',
+            vers: '1.46'
         };
 
-        const response = await axios.post('https://gpts5.jsdeliv.com/api', payload, {
+        const response = await axios.post('https://gpts5.jsdeliv.com/api', null, {
+            params: payload,
             headers: {
-                'User-Agent': "okhttp/5.0.0-alpha.2",
-                'Accept-Encoding': "gzip",
-                'Content-Type': "application/json; charset=utf-8"
+                'User-Agent': 'Dalvik/2.1.0 (Linux; U; Android 11; Build/RP1A.200720.011)',
+                'Accept': 'text/event-stream',
+                'Accept-Encoding': 'gzip'
             }
         });
 
-        // التأكد من أن الاستجابة تحتوي على البيانات المتوقعة
-        if (response.data && response.data.result && response.data.result.choices && response.data.result.choices.length > 0) {
-            const joke = response.data.result.choices[0].message.content;
+        if (response.data && response.data.includes('token')) {
+            const tokens = response.data.match(/"token":"(.*?)"/g).map(token => token.replace('"token":"', '').replace('"', ''));
+            let joke = '';
+
+            for (let tok of tokens) {
+                joke += decodeURIComponent(tok);
+            }
+
             bot.sendMessage(chatId, joke);
         } else {
             console.error('Unexpected response format:', response.data);
@@ -689,6 +731,7 @@ async function getJoke(chatId) {
         bot.sendMessage(chatId, 'حدثت مشكلة أثناء جلب النكتة. الرجاء المحاولة مرة أخرى لاحقًا😁.');
     }
 }
+
 
 
     // هنا يمكنك استدعاء getMessage لأي نوع من الرسائل
