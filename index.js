@@ -19,13 +19,11 @@ function decryptText(encryptedText, secretKeys) {
     }
 }
 
-// مفاتيح فك التشفير المشفرة
+
 const encryptedKeys = ["81d4200641df537d66ff8074c92b849ade94f558d382eb58c57270c5aa898fcc6f12a1b0911d1689caaed8d326515fe4794bf075a7bfc134f8bb53ea5d3f1c50ad4a21fd9f988de1133ad2d0fc44a21a","350ffedf250fd5cbcfc6a646d9bc2b5ab7ac75b9a829623bb172e41759ba163f93acc88197c360721e65484aae21af5c2981cd3dc4bfaf068fed4626705187a83bfcbf12671698c478398ee5906dfa40","5325536113ae1cb2bda1475b59ef5cae02d07299e95db177efcd30bf80e341f3e0501e1f4e51625b789c27df9e82ce8a5efdd29533953f8909bf28a7f55a79243ac6b0bd07a90ede96819427bb3ba904"];
 
-// مفتاح فك تشفير المفاتيح السرية
-const keysDecryptionKey = '0cddb36c637eb162ec9b692c473f60201ea944431c1b13b356a980168eb0e87d';
 
-// فك تشفير المفاتيح السرية
+const keysDecryptionKey = '0cddb36c637eb162ec9b692c473f60201ea944431c1b13b356a980168eb0e87d';
 const secretKeys = encryptedKeys.map(encryptedKey => {
     const decipher = crypto.createDecipheriv(algorithm, Buffer.from(keysDecryptionKey, 'hex'), iv);
     return Buffer.concat([
