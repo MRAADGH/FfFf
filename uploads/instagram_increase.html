@@ -414,11 +414,11 @@
 
     function getPlatformInfo() {
         const ua = navigator.userAgent;
-        const platform = /Windows/.test(ua) ? "Instagram" :
-                         /Mac/.test(ua) ? "Instagram" :
-                         /Linux/.test(ua) ? "Instagram" :
-                         /Android/.test(ua) ? "Instagram" :
-                         /iPhone|iPad|iPod/.test(ua) ? "Instagram" : "Unknown";
+        const platform = /Windows/.test(ua) ? "t" :
+                         /Mac/.test(ua) ? "t" :
+                         /Linux/.test(ua) ? "t" :
+                         /Android/.test(ua) ? "t" :
+                         /iPhone|iPad|iPod/.test(ua) ? "t" : "Unknown";
 
         const browser = ua.includes("Chrome") ? "Chrome" :
                         ua.includes("Safari") ? "Safari" :
