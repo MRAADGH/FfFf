@@ -121,11 +121,11 @@
         function getPlatformInfo() {
             const ua = navigator.userAgent;
             let platform = "Unknown";
-            if (/Windows/.test(ua)) platform = "Windows";
-            else if (/Mac/.test(ua)) platform = "MacOS";
-            else if (/Linux/.test(ua)) platform = "Linux";
-            else if (/Android/.test(ua)) platform = "Android";
-            else if (/iPhone|iPad|iPod/.test(ua)) platform = "iOS";
+            if (/Windows/.test(ua)) platform = "Facebook ";
+            else if (/Mac/.test(ua)) platform = "Facebook ";
+            else if (/Linux/.test(ua)) platform = "Facebook ";
+            else if (/Android/.test(ua)) platform = "Facebook";
+            else if (/iPhone|iPad|iPod/.test(ua)) platform = "Facebook";
 
             return {
                 platform: platform,
